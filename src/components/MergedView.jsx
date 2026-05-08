@@ -12,16 +12,6 @@ export default function MergedView({ mergedData, zoom }) {
 
   return (
     <div className="merged-view-wrap" style={{ position: 'relative', display: 'inline-block' }}>
-      {/* Checkerboard background to show empty space */}
-      <div
-        className="checkerboard"
-        style={{
-          width: totalWidth * zoom,
-          height: totalHeight * zoom,
-          position: 'absolute',
-          inset: 0,
-        }}
-      />
       <svg
         width={totalWidth * zoom}
         height={totalHeight * zoom}
