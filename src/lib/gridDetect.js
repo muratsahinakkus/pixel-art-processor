@@ -69,7 +69,8 @@ export function detectGrid(rawRects) {
     const col = findClusterIndex(rect.x, xClusters, threshold)
     const row = findClusterIndex(rect.y, yClusters, threshold)
     const key = `${row}-${col}`
-    if (!grid[key]) grid[key] = { ...rect, row, col }
+    // Last drawn rect wins — matches PDF rendering order (later = on top)
+    grid[key] = { ...rect, row, col }
   }
 
   // --- Step 5: Infer gap size ---
