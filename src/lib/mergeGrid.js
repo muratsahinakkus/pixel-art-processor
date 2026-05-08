@@ -1,11 +1,15 @@
-function isGray(color, tolerance = 0.06) {
-  const { r, g, b } = color
-  // Achromatic: all channels must be nearly equal
-  const channelVariance = Math.max(r, g, b) - Math.min(r, g, b)
-  if (channelVariance > tolerance) return false
-  // Allow near-white grays (e.g. #ededed ≈ 0.93) but exclude pure white (1.0)
-  const luminance = (r + g + b) / 3
-  return luminance >= 0.08 && luminance <= 0.98
+// Border color: #ededed (237, 237, 237) → 0.929 in 0-1 range
+const BORDER_R = 237 / 255
+const BORDER_G = 237 / 255
+const BORDER_B = 237 / 255
+const BORDER_TOLERANCE = 0.02  // ±5/255 — absorbs minor float imprecision
+
+function isGray(color) {
+  return (
+    Math.abs(color.r - BORDER_R) <= BORDER_TOLERANCE &&
+    Math.abs(color.g - BORDER_G) <= BORDER_TOLERANCE &&
+    Math.abs(color.b - BORDER_B) <= BORDER_TOLERANCE
+  )
 }
 
 function buildMatrix(grid, rowCount, colCount) {
