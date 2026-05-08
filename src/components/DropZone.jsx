@@ -70,7 +70,7 @@ export default function DropZone({ onFile }) {
         {isDragging ? 'Bırakın!' : 'Dosyayı buraya sürükleyin'}
       </p>
       <p className="dropzone-sub">veya tıklayarak seçin</p>
-      <p className="dropzone-hint">.ai · .svg · Maks 20×20 grid</p>
+      <p className="dropzone-hint">.ai · .svg · Maks 21×21 grid</p>
     </div>
   )
 }

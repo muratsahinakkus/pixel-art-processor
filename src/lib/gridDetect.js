@@ -44,7 +44,7 @@ export function detectGrid(rawRects) {
   const xClusters = clusterValues(pixels.map(r => r.x), threshold)
   const yClusters = clusterValues(pixels.map(r => r.y), threshold)
 
-  if (xClusters.length > 30 || yClusters.length > 30) {
+  if (xClusters.length > 32 || yClusters.length > 32) {
     throw new Error(
       `Grid çok büyük görünüyor (${xClusters.length}×${yClusters.length}). Dosya beklenen formatta olmayabilir.`
     )
