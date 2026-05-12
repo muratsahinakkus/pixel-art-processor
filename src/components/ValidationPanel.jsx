@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { validate } from '../lib/validate.js'
+import { validate, fixAndDownload } from '../lib/validate.js'
 
 function scrollToError(err, rawRects, gridData) {
   let targetEl
@@ -36,7 +36,7 @@ function scrollToError(err, rawRects, gridData) {
   })
 }
 
-export default function ValidationPanel({ rawRects, gridData, onHighlight }) {
+export default function ValidationPanel({ rawRects, gridData, onHighlight, fileName }) {
   const [pixelSize, setPixelSize] = useState(gridData.pixelSize)
   const [gapSize, setGapSize] = useState(gridData.gapSize)
   const [errors, setErrors] = useState(null)
@@ -111,6 +111,19 @@ export default function ValidationPanel({ rawRects, gridData, onHighlight }) {
               {errors !== null && (
                 <button className="btn-ghost" onClick={handleClear}>
                   Temizle
+                </button>
+              )}
+              {hasErrors && (
+                <button
+                  className="btn-fix"
+                  onClick={() => fixAndDownload(gridData, Number(pixelSize), Number(gapSize), fileName)}
+                  title={`Tüm pikselleri ${pixelSize}pt boyutuna, boşlukları ${gapSize}pt'ye snap'le`}
+                >
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M13.5 2.5l-1-1-9 9-1 3 3-1 9-9-1-1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+                    <path d="M11.5 3.5l1 1" stroke="currentColor" strokeWidth="1.4"/>
+                  </svg>
+                  Düzelt ve İndir
                 </button>
               )}
             </div>

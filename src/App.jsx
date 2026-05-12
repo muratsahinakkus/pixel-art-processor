@@ -109,6 +109,7 @@ export default function App() {
               rawRects={rawRects}
               gridData={gridData}
               onHighlight={setHighlightedIds}
+              fileName={fileName}
             />
           </>
         )}

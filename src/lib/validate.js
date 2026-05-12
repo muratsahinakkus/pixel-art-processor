@@ -1,4 +1,71 @@
+import { buildSVGString, downloadSVG } from './exportSVG.js'
+
 const TOLERANCE = 0.6 // points
+
+// Border color #ededed in 0-1 range (same as mergeGrid.js)
+const BORDER_R = 237 / 255
+const BORDER_G = 237 / 255
+const BORDER_B = 237 / 255
+const BORDER_TOL = 0.02
+
+function isBorderColor(c) {
+  return (
+    Math.abs(c.r - BORDER_R) <= BORDER_TOL &&
+    Math.abs(c.g - BORDER_G) <= BORDER_TOL &&
+    Math.abs(c.b - BORDER_B) <= BORDER_TOL
+  )
+}
+
+// Rebuild every pixel at exactly the right size and spacing,
+// strip gray borders, normalize to (0,0). Download as SVG.
+export function fixAndDownload(gridData, expectedPixelSize, expectedGapSize, fileName) {
+  const { grid, colCount, rowCount } = gridData
+  const step = expectedPixelSize + expectedGapSize
+
+  // Build matrix
+  const matrix = []
+  for (let r = 0; r < rowCount; r++) {
+    matrix[r] = []
+    for (let c = 0; c < colCount; c++) {
+      matrix[r][c] = grid[`${r}-${c}`] || null
+    }
+  }
+
+  // Strip gray border rows/cols
+  const isGrayRow = (r, l, ri) =>
+    matrix[r].slice(l, ri + 1).every(cell => !cell || isBorderColor(cell.color))
+  const isGrayCol = (c, t, b) =>
+    matrix.slice(t, b + 1).every(row => !row[c] || isBorderColor(row[c].color))
+
+  let top = 0, bottom = rowCount - 1, left = 0, right = colCount - 1
+  while (top <= bottom && isGrayRow(top, left, right)) top++
+  while (bottom >= top && isGrayRow(bottom, left, right)) bottom--
+  while (left <= right && isGrayCol(left, top, bottom)) left++
+  while (right >= left && isGrayCol(right, top, bottom)) right--
+
+  const fixedRects = []
+  for (let r = top; r <= bottom; r++) {
+    for (let c = left; c <= right; c++) {
+      const cell = matrix[r][c]
+      if (!cell || isBorderColor(cell.color)) continue
+      fixedRects.push({
+        x: (c - left) * step,
+        y: (r - top) * step,
+        w: expectedPixelSize,
+        h: expectedPixelSize,
+        color: cell.color,
+      })
+    }
+  }
+
+  const cols = right - left + 1
+  const rows = bottom - top + 1
+  const totalWidth = (cols - 1) * step + expectedPixelSize
+  const totalHeight = (rows - 1) * step + expectedPixelSize
+
+  const svg = buildSVGString(fixedRects, totalWidth, totalHeight)
+  downloadSVG(svg, fileName, '_fixed')
+}
 
 export function validate(rawRects, gridData, expectedPixelSize, expectedGapSize) {
   const errors = []
