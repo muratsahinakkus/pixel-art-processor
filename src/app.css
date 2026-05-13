@@ -538,6 +538,93 @@ body {
   display: inline-block;
 }
 
+/* ---- Artboard Selector ---- */
+.artboard-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.artboard-selector-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.artboard-selector-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.artboard-selector-sub {
+  color: var(--text-sub);
+  font-size: 14px;
+}
+
+.artboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.artboard-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.artboard-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.artboard-thumb-wrap {
+  background: #f0f0ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  aspect-ratio: 1;
+}
+
+.artboard-thumb {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.artboard-card-label {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.artboard-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.artboard-card-size {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+.artboard-back {
+  align-self: flex-start;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 640px) {
   .preview-columns {

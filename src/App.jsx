@@ -1,15 +1,17 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import DropZone from './components/DropZone.jsx'
+import ArtboardSelector from './components/ArtboardSelector.jsx'
 import PreviewPanel from './components/PreviewPanel.jsx'
 import ValidationPanel from './components/ValidationPanel.jsx'
 import ExportBar from './components/ExportBar.jsx'
-import { parseAIFile } from './lib/parseAI.js'
+import { loadAIPDF, getArtboards, parseAIPage } from './lib/parseAI.js'
 import { parseSVGFile } from './lib/parseSVG.js'
 import { detectGrid } from './lib/gridDetect.js'
 import { mergeGrid, getSpacedRects } from './lib/mergeGrid.js'
 
 export default function App() {
   const [fileName, setFileName] = useState(null)
+  const [artboards, setArtboards] = useState(null)
   const [rawRects, setRawRects] = useState(null)
   const [gridData, setGridData] = useState(null)
   const [mergedData, setMergedData] = useState(null)
@@ -18,6 +20,30 @@ export default function App() {
   const [parseError, setParseError] = useState(null)
   const [highlightedIds, setHighlightedIds] = useState([])
 
+  const pdfRef = useRef(null)
+
+  const resetAll = () => {
+    setFileName(null)
+    setArtboards(null)
+    setRawRects(null)
+    setGridData(null)
+    setMergedData(null)
+    setSpacedData(null)
+    setParseError(null)
+    setHighlightedIds([])
+    pdfRef.current = null
+  }
+
+  const processRects = (rects) => {
+    const grid = detectGrid(rects)
+    const merged = mergeGrid(grid)
+    const spaced = getSpacedRects(grid)
+    setRawRects(rects)
+    setGridData(grid)
+    setMergedData(merged)
+    setSpacedData(spaced)
+  }
+
   const processFile = useCallback(async (file) => {
     setIsProcessing(true)
     setParseError(null)
@@ -25,29 +51,45 @@ export default function App() {
     setGridData(null)
     setMergedData(null)
     setSpacedData(null)
+    setArtboards(null)
     setHighlightedIds([])
     setFileName(file.name)
+    pdfRef.current = null
 
     try {
       const buffer = await file.arrayBuffer()
       const ext = file.name.split('.').pop().toLowerCase()
 
-      let rects
       if (ext === 'svg') {
         const text = new TextDecoder().decode(buffer)
-        rects = parseSVGFile(text)
+        const rects = parseSVGFile(text)
+        processRects(rects)
       } else {
-        rects = await parseAIFile(buffer)
+        const pdf = await loadAIPDF(buffer)
+        pdfRef.current = pdf
+
+        if (pdf.numPages === 1) {
+          const rects = await parseAIPage(pdf, 1)
+          processRects(rects)
+        } else {
+          const abs = await getArtboards(pdf)
+          setArtboards(abs)
+        }
       }
+    } catch (err) {
+      setParseError(err.message)
+    } finally {
+      setIsProcessing(false)
+    }
+  }, [])
 
-      const grid = detectGrid(rects)
-      const merged = mergeGrid(grid)
-      const spaced = getSpacedRects(grid)
-
-      setRawRects(rects)
-      setGridData(grid)
-      setMergedData(merged)
-      setSpacedData(spaced)
+  const handleArtboardSelect = useCallback(async (pageNum) => {
+    setIsProcessing(true)
+    setParseError(null)
+    try {
+      const rects = await parseAIPage(pdfRef.current, pageNum)
+      processRects(rects)
+      setArtboards(null)
     } catch (err) {
       setParseError(err.message)
     } finally {
@@ -64,10 +106,7 @@ export default function App() {
           <span className="app-logo">⬛</span>
           <h1>Pixel Art Processor</h1>
           {fileName && !isProcessing && (
-            <button className="btn-ghost" onClick={() => {
-              setFileName(null); setRawRects(null); setGridData(null)
-              setMergedData(null); setParseError(null); setHighlightedIds([])
-            }}>
+            <button className="btn-ghost" onClick={resetAll}>
               Yeni dosya
             </button>
           )}
@@ -75,7 +114,7 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        {!hasResult && !isProcessing && !parseError && (
+        {!hasResult && !isProcessing && !parseError && !artboards && (
           <DropZone onFile={processFile} />
         )}
 
@@ -95,6 +134,15 @@ export default function App() {
               Tekrar dene
             </button>
           </div>
+        )}
+
+        {artboards && !isProcessing && (
+          <ArtboardSelector
+            artboards={artboards}
+            fileName={fileName}
+            onSelect={handleArtboardSelect}
+            onBack={resetAll}
+          />
         )}
 
         {hasResult && (
