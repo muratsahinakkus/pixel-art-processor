@@ -42,6 +42,7 @@ export default function App() {
     setGridData(grid)
     setMergedData(merged)
     setSpacedData(spaced)
+    fetch('https://api.countapi.xyz/hit/pap-otsimo-murat/usage').catch(() => {})
   }
 
   const processFile = useCallback(async (file) => {
