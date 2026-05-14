@@ -47,6 +47,7 @@ export default function ValidationPanel({ rawRects, gridData, onHighlight, fileN
     setErrors(errs)
     setOpen(true)
     onHighlight(errs.map(e => e.id))
+    window.gtag?.('event', 'validate', { error_count: errs.length, pixel_size: Number(pixelSize), gap_size: Number(gapSize) })
   }
 
   function handleClear() {
@@ -116,7 +117,10 @@ export default function ValidationPanel({ rawRects, gridData, onHighlight, fileN
               {hasErrors && (
                 <button
                   className="btn-fix"
-                  onClick={() => fixAndDownload(gridData, Number(pixelSize), Number(gapSize), fileName)}
+                  onClick={() => {
+                    fixAndDownload(gridData, Number(pixelSize), Number(gapSize), fileName)
+                    window.gtag?.('event', 'fix_and_download', { error_count: errors.length })
+                  }}
                   title={`Tüm pikselleri ${pixelSize}pt boyutuna, boşlukları ${gapSize}pt'ye snap'le`}
                 >
                   <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">

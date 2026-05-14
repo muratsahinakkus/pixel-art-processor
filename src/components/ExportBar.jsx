@@ -22,6 +22,7 @@ export default function ExportBar({ mergedData, spacedData, fileName }) {
   function handleDownloadMerged() {
     const svg = buildSVGString(mergedRects, totalWidth, totalHeight)
     downloadSVG(svg, fileName, '_merged')
+    window.gtag?.('event', 'download', { type: 'merged', pixel_count: mergedRects.length })
   }
 
   function handleDownloadSpaced() {
@@ -29,6 +30,7 @@ export default function ExportBar({ mergedData, spacedData, fileName }) {
     const { spacedRects, totalWidth: w, totalHeight: h } = spacedData
     const svg = buildSVGString(spacedRects, w, h)
     downloadSVG(svg, fileName, '_spaced')
+    window.gtag?.('event', 'download', { type: 'spaced', pixel_count: mergedRects.length })
   }
 
   return (
