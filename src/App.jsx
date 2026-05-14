@@ -34,7 +34,7 @@ export default function App() {
     pdfRef.current = null
   }
 
-  const processRects = (rects) => {
+  const processRects = (rects, ext) => {
     const grid = detectGrid(rects)
     const merged = mergeGrid(grid)
     const spaced = getSpacedRects(grid)
@@ -42,7 +42,7 @@ export default function App() {
     setGridData(grid)
     setMergedData(merged)
     setSpacedData(spaced)
-    fetch('https://api.counterapi.dev/v1/pap-otsimo-murat/usage/up').catch(() => {})
+    window.gtag?.('event', 'file_processed', { file_type: ext })
   }
 
   const processFile = useCallback(async (file) => {
@@ -64,14 +64,14 @@ export default function App() {
       if (ext === 'svg') {
         const text = new TextDecoder().decode(buffer)
         const rects = parseSVGFile(text)
-        processRects(rects)
+        processRects(rects, ext)
       } else {
         const pdf = await loadAIPDF(buffer)
         pdfRef.current = pdf
 
         if (pdf.numPages === 1) {
           const rects = await parseAIPage(pdf, 1)
-          processRects(rects)
+          processRects(rects, ext)
         } else {
           const abs = await getArtboards(pdf)
           setArtboards(abs)
@@ -89,7 +89,7 @@ export default function App() {
     setParseError(null)
     try {
       const rects = await parseAIPage(pdfRef.current, pageNum)
-      processRects(rects)
+      processRects(rects, 'ai')
       setArtboards(null)
     } catch (err) {
       setParseError(err.message)

@@ -21,7 +21,7 @@
       border: 1px solid #e0dfd8;
       border-radius: 10px;
       padding: 40px;
-      width: 320px;
+      width: 340px;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -52,11 +52,25 @@
     }
     button:hover { opacity: 0.85; }
     #result { display: none; flex-direction: column; gap: 12px; }
-    .stat-label { font-size: 12px; color: #6b6b65; text-transform: uppercase; letter-spacing: 0.05em; }
-    .stat-value { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; }
-    .stat-sub { font-size: 12px; color: #6b6b65; }
     #err { color: #d0291e; font-size: 12px; display: none; }
-    #loading { color: #6b6b65; font-size: 13px; display: none; }
+    .ga-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f5f5f0;
+      border: 1px solid #e0dfd8;
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-decoration: none;
+      color: #1a1a18;
+      transition: border-color 0.15s;
+    }
+    .ga-link:hover { border-color: #333; }
+    .ga-link-left { display: flex; flex-direction: column; gap: 3px; }
+    .ga-link-title { font-size: 13px; font-weight: 600; }
+    .ga-link-sub { font-size: 11px; color: #6b6b65; }
+    .ga-arrow { font-size: 16px; color: #6b6b65; }
+    .hint { font-size: 11px; color: #6b6b65; }
   </style>
 </head>
 <body>
@@ -67,63 +81,42 @@
       <p id="err">Yanlış şifre.</p>
       <button onclick="check()">Giriş</button>
     </div>
+
     <div id="result">
-      <div style="display:flex;gap:24px;">
-        <div style="flex:1;">
-          <p class="stat-label">Sayfa ziyareti</p>
-          <p class="stat-value" id="count-visits">—</p>
+      <a
+        class="ga-link"
+        href="https://analytics.google.com/analytics/web/#/p$(GA_PROP)/reports/reportinghub"
+        target="_blank"
+        rel="noopener"
+        id="ga-href"
+      >
+        <div class="ga-link-left">
+          <span class="ga-link-title">Google Analytics</span>
+          <span class="ga-link-sub">Pixel Art Processor · G-R362PF79D4</span>
         </div>
-        <div style="flex:1;">
-          <p class="stat-label">Dosya işlendi</p>
-          <p class="stat-value" id="count-usage">—</p>
-        </div>
-      </div>
-      <p class="stat-sub" id="last-check"></p>
-      <button onclick="refresh()" style="background:#f5f5f0;color:#1a1a18;border:1px solid #e0dfd8;">Yenile</button>
+        <span class="ga-arrow">↗</span>
+      </a>
+      <p class="hint">
+        <strong>Sayfa ziyareti:</strong> Reports → Realtime veya Engagement → Overview<br><br>
+        <strong>Dosya işlendi:</strong> Reports → Engagement → Events → <em>file_processed</em>
+      </p>
     </div>
-    <p id="loading">Yükleniyor…</p>
   </div>
 
   <script>
-    const PASS         = '081289Ma!'
-    const API_VISITS   = 'https://api.counterapi.dev/v1/pap-otsimo-murat/visits'
-    const API_USAGE    = 'https://api.counterapi.dev/v1/pap-otsimo-murat/usage'
+    const PASS = '081289Ma!'
 
     document.getElementById('pw').addEventListener('keydown', e => {
       if (e.key === 'Enter') check()
     })
 
     function check() {
-      const val = document.getElementById('pw').value
-      if (val !== PASS) {
+      if (document.getElementById('pw').value !== PASS) {
         document.getElementById('err').style.display = 'block'
         return
       }
       document.getElementById('login-form').style.display = 'none'
-      document.getElementById('loading').style.display = 'block'
-      loadCount()
-    }
-
-    function loadCount() {
-      Promise.all([
-        fetch(API_VISITS).then(r => r.json()).catch(() => ({ value: null })),
-        fetch(API_USAGE).then(r => r.json()).catch(() => ({ value: null })),
-      ]).then(([visits, usage]) => {
-        document.getElementById('loading').style.display = 'none'
-        document.getElementById('result').style.display = 'flex'
-        document.getElementById('count-visits').textContent =
-          visits.count != null ? visits.count.toLocaleString('tr-TR') : '—'
-        document.getElementById('count-usage').textContent =
-          usage.count != null ? usage.count.toLocaleString('tr-TR') : '—'
-        document.getElementById('last-check').textContent =
-          'Son kontrol: ' + new Date().toLocaleString('tr-TR')
-      })
-    }
-
-    function refresh() {
-      document.getElementById('count-visits').textContent = '…'
-      document.getElementById('count-usage').textContent = '…'
-      loadCount()
+      document.getElementById('result').style.display = 'flex'
     }
   </script>
 </body>
