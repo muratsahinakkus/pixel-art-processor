@@ -86,8 +86,8 @@
 
   <script>
     const PASS         = '081289Ma!'
-    const API_VISITS   = 'https://api.countapi.xyz/get/pap-otsimo-murat/visits'
-    const API_USAGE    = 'https://api.countapi.xyz/get/pap-otsimo-murat/usage'
+    const API_VISITS   = 'https://api.counterapi.dev/v1/pap-otsimo-murat/visits'
+    const API_USAGE    = 'https://api.counterapi.dev/v1/pap-otsimo-murat/usage'
 
     document.getElementById('pw').addEventListener('keydown', e => {
       if (e.key === 'Enter') check()
@@ -112,9 +112,9 @@
         document.getElementById('loading').style.display = 'none'
         document.getElementById('result').style.display = 'flex'
         document.getElementById('count-visits').textContent =
-          visits.value != null ? visits.value.toLocaleString('tr-TR') : '—'
+          visits.count != null ? visits.count.toLocaleString('tr-TR') : '—'
         document.getElementById('count-usage').textContent =
-          usage.value != null ? usage.value.toLocaleString('tr-TR') : '—'
+          usage.count != null ? usage.count.toLocaleString('tr-TR') : '—'
         document.getElementById('last-check').textContent =
           'Son kontrol: ' + new Date().toLocaleString('tr-TR')
       })

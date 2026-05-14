@@ -42,7 +42,7 @@ export default function App() {
     setGridData(grid)
     setMergedData(merged)
     setSpacedData(spaced)
-    fetch('https://api.countapi.xyz/hit/pap-otsimo-murat/usage').catch(() => {})
+    fetch('https://api.counterapi.dev/v1/pap-otsimo-murat/usage/up').catch(() => {})
   }
 
   const processFile = useCallback(async (file) => {
