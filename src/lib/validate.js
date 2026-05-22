@@ -18,7 +18,8 @@ function isBorderColor(c) {
 
 // Rebuild every pixel at exactly the right size and spacing,
 // strip gray borders, normalize to (0,0). Download as SVG.
-export function fixAndDownload(gridData, expectedPixelSize, expectedGapSize, fileName) {
+// mode: 'spaced' (with gaps) | 'merged' (no gaps)
+export function fixAndDownload(gridData, expectedPixelSize, expectedGapSize, fileName, mode = 'spaced') {
   const { grid, colCount, rowCount } = gridData
   const step = expectedPixelSize + expectedGapSize
 
@@ -48,9 +49,15 @@ export function fixAndDownload(gridData, expectedPixelSize, expectedGapSize, fil
     for (let c = left; c <= right; c++) {
       const cell = matrix[r][c]
       if (!cell || isBorderColor(cell.color)) continue
+      const xPos = mode === 'merged'
+        ? (c - left) * expectedPixelSize
+        : (c - left) * step
+      const yPos = mode === 'merged'
+        ? (r - top) * expectedPixelSize
+        : (r - top) * step
       fixedRects.push({
-        x: (c - left) * step,
-        y: (r - top) * step,
+        x: xPos,
+        y: yPos,
         w: expectedPixelSize,
         h: expectedPixelSize,
         color: cell.color,
@@ -60,11 +67,15 @@ export function fixAndDownload(gridData, expectedPixelSize, expectedGapSize, fil
 
   const cols = right - left + 1
   const rows = bottom - top + 1
-  const totalWidth = (cols - 1) * step + expectedPixelSize
-  const totalHeight = (rows - 1) * step + expectedPixelSize
+  const totalWidth = mode === 'merged'
+    ? cols * expectedPixelSize
+    : (cols - 1) * step + expectedPixelSize
+  const totalHeight = mode === 'merged'
+    ? rows * expectedPixelSize
+    : (rows - 1) * step + expectedPixelSize
 
   const svg = buildSVGString(fixedRects, totalWidth, totalHeight)
-  downloadSVG(svg, fileName, '_fixed')
+  downloadSVG(svg, fileName, mode === 'merged' ? '_fixed_merged' : '_fixed_spaced')
 }
 
 export function validate(rawRects, gridData, expectedPixelSize, expectedGapSize) {

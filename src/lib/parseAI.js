@@ -75,6 +75,7 @@ export async function parseAIPage(pdf, pageNum = 1) {
   const page = await pdf.getPage(pageNum)
   const viewport = page.getViewport({ scale: 1 })
   const pageHeight = viewport.height
+  const pageWidth = viewport.width
 
   const opList = await page.getOperatorList()
   const { fnArray, argsArray } = opList
@@ -125,12 +126,13 @@ export async function parseAIPage(pdf, pageNum = 1) {
     }
   }
 
-  return rects
+  return { rects, pageWidth, pageHeight }
 }
 
 // ─── Convenience wrapper (single-page / backwards compat) ───────────────────
 
 export async function parseAIFile(arrayBuffer) {
   const pdf = await loadAIPDF(arrayBuffer)
-  return parseAIPage(pdf, 1)
+  const { rects } = await parseAIPage(pdf, 1)
+  return rects
 }

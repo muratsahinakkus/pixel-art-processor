@@ -16,6 +16,7 @@ export default function App() {
   const [gridData, setGridData] = useState(null)
   const [mergedData, setMergedData] = useState(null)
   const [spacedData, setSpacedData] = useState(null)
+  const [artboardSize, setArtboardSize] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [parseError, setParseError] = useState(null)
   const [highlightedIds, setHighlightedIds] = useState([])
@@ -29,19 +30,21 @@ export default function App() {
     setGridData(null)
     setMergedData(null)
     setSpacedData(null)
+    setArtboardSize(null)
     setParseError(null)
     setHighlightedIds([])
     pdfRef.current = null
   }
 
-  const processRects = (rects, ext) => {
+  const processRects = (rects, ext, abSize = null) => {
     const grid = detectGrid(rects)
     const merged = mergeGrid(grid)
-    const spaced = getSpacedRects(grid)
+    const spaced = getSpacedRects(grid, abSize)
     setRawRects(rects)
     setGridData(grid)
     setMergedData(merged)
     setSpacedData(spaced)
+    setArtboardSize(abSize)
     window.gtag?.('event', 'file_processed', { file_type: ext })
   }
 
@@ -53,6 +56,7 @@ export default function App() {
     setMergedData(null)
     setSpacedData(null)
     setArtboards(null)
+    setArtboardSize(null)
     setHighlightedIds([])
     setFileName(file.name)
     pdfRef.current = null
@@ -64,14 +68,14 @@ export default function App() {
       if (ext === 'svg') {
         const text = new TextDecoder().decode(buffer)
         const rects = parseSVGFile(text)
-        processRects(rects, ext)
+        processRects(rects, ext, null)
       } else {
         const pdf = await loadAIPDF(buffer)
         pdfRef.current = pdf
 
         if (pdf.numPages === 1) {
-          const rects = await parseAIPage(pdf, 1)
-          processRects(rects, ext)
+          const { rects, pageWidth, pageHeight } = await parseAIPage(pdf, 1)
+          processRects(rects, ext, { w: pageWidth, h: pageHeight })
         } else {
           const abs = await getArtboards(pdf)
           setArtboards(abs)
@@ -88,8 +92,8 @@ export default function App() {
     setIsProcessing(true)
     setParseError(null)
     try {
-      const rects = await parseAIPage(pdfRef.current, pageNum)
-      processRects(rects, 'ai')
+      const { rects, pageWidth, pageHeight } = await parseAIPage(pdfRef.current, pageNum)
+      processRects(rects, 'ai', { w: pageWidth, h: pageHeight })
       setArtboards(null)
     } catch (err) {
       setParseError(err.message)

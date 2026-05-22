@@ -115,20 +115,36 @@ export default function ValidationPanel({ rawRects, gridData, onHighlight, fileN
                 </button>
               )}
               {hasErrors && (
-                <button
-                  className="btn-fix"
-                  onClick={() => {
-                    fixAndDownload(gridData, Number(pixelSize), Number(gapSize), fileName)
-                    window.gtag?.('event', 'fix_and_download', { error_count: errors.length })
-                  }}
-                  title={`Tüm pikselleri ${pixelSize}pt boyutuna, boşlukları ${gapSize}pt'ye snap'le`}
-                >
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M13.5 2.5l-1-1-9 9-1 3 3-1 9-9-1-1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-                    <path d="M11.5 3.5l1 1" stroke="currentColor" strokeWidth="1.4"/>
-                  </svg>
-                  Düzelt ve İndir
-                </button>
+                <>
+                  <button
+                    className="btn-fix"
+                    onClick={() => {
+                      fixAndDownload(gridData, Number(pixelSize), Number(gapSize), fileName, 'spaced')
+                      window.gtag?.('event', 'fix_and_download', { mode: 'spaced', error_count: errors.length })
+                    }}
+                    title="Pikselleri düzelt, boşlukları koru"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M13.5 2.5l-1-1-9 9-1 3 3-1 9-9-1-1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+                      <path d="M11.5 3.5l1 1" stroke="currentColor" strokeWidth="1.4"/>
+                    </svg>
+                    Düzelt (Boşluklu)
+                  </button>
+                  <button
+                    className="btn-fix"
+                    onClick={() => {
+                      fixAndDownload(gridData, Number(pixelSize), Number(gapSize), fileName, 'merged')
+                      window.gtag?.('event', 'fix_and_download', { mode: 'merged', error_count: errors.length })
+                    }}
+                    title="Pikselleri düzelt ve birleştir"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M13.5 2.5l-1-1-9 9-1 3 3-1 9-9-1-1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+                      <path d="M11.5 3.5l1 1" stroke="currentColor" strokeWidth="1.4"/>
+                    </svg>
+                    Düzelt (Birleşik)
+                  </button>
+                </>
               )}
             </div>
           </div>

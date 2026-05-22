@@ -51,9 +51,11 @@ function stripGrayBorders(matrix) {
   return { top, bottom, left, right }
 }
 
-// Returns rects at their original AI positions, gray border squares removed,
-// coordinates normalized so the content starts at (0, 0).
-export function getSpacedRects(gridData) {
+// Returns rects at their original AI positions, gray border squares removed.
+// If artboardSize is provided, keeps original coordinates and uses artboard
+// dimensions for the SVG canvas (preserves Illustrator artboard size).
+// Otherwise normalizes content to start at (0, 0).
+export function getSpacedRects(gridData, artboardSize = null) {
   const { grid, colCount, rowCount } = gridData
   const matrix = buildMatrix(grid, rowCount, colCount)
   const { top, bottom, left, right } = stripGrayBorders(matrix)
@@ -68,6 +70,15 @@ export function getSpacedRects(gridData) {
   }
 
   if (rects.length === 0) return { spacedRects: [], totalWidth: 0, totalHeight: 0 }
+
+  if (artboardSize) {
+    // Keep original positions, use full artboard as canvas
+    return {
+      spacedRects: rects,
+      totalWidth: artboardSize.w,
+      totalHeight: artboardSize.h,
+    }
+  }
 
   // Normalize so content starts at (0, 0)
   const minX = Math.min(...rects.map(r => r.x))
