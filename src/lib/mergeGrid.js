@@ -52,12 +52,30 @@ function stripGrayBorders(matrix) {
 }
 
 // Returns rects at their original AI positions, gray border squares removed.
-// If artboardSize is provided, keeps original coordinates and uses artboard
-// dimensions for the SVG canvas (preserves Illustrator artboard size).
-// Otherwise normalizes content to start at (0, 0).
+// Canvas size is determined by ALL cells (gray + colored) before border stripping
+// — this preserves the full grid artboard even when edge rows/cols are gray.
+// artboardSize (from PDF page) is used as a fallback if no cells at all.
 export function getSpacedRects(gridData, artboardSize = null) {
   const { grid, colCount, rowCount } = gridData
   const matrix = buildMatrix(grid, rowCount, colCount)
+
+  // ── Step 1: bounding box of ALL cells (gray + colored) ──────────────────
+  let allMinX = Infinity, allMinY = Infinity
+  let allMaxX = -Infinity, allMaxY = -Infinity
+  let hasAnyCell = false
+  for (let r = 0; r < rowCount; r++) {
+    for (let c = 0; c < colCount; c++) {
+      const cell = matrix[r][c]
+      if (!cell) continue
+      hasAnyCell = true
+      if (cell.x < allMinX) allMinX = cell.x
+      if (cell.y < allMinY) allMinY = cell.y
+      if (cell.x + cell.w > allMaxX) allMaxX = cell.x + cell.w
+      if (cell.y + cell.h > allMaxY) allMaxY = cell.y + cell.h
+    }
+  }
+
+  // ── Step 2: strip gray borders, collect colored rects ───────────────────
   const { top, bottom, left, right } = stripGrayBorders(matrix)
 
   const rects = []
@@ -65,31 +83,41 @@ export function getSpacedRects(gridData, artboardSize = null) {
     for (let c = left; c <= right; c++) {
       const cell = matrix[r][c]
       if (!cell || isGray(cell.color)) continue
-      rects.push({ ...cell }) // original x, y, w, h from the AI file
+      rects.push({ ...cell })
     }
   }
 
   if (rects.length === 0) return { spacedRects: [], totalWidth: 0, totalHeight: 0 }
 
-  if (artboardSize) {
-    // Keep original positions, use full artboard as canvas
-    return {
-      spacedRects: rects,
-      totalWidth: artboardSize.w,
-      totalHeight: artboardSize.h,
+  // ── Step 3: determine canvas & origin ───────────────────────────────────
+  // Priority: all-cell bounds > artboardSize (PDF page) > content-only bounds
+  let canvasW, canvasH, originX, originY
+
+  if (hasAnyCell) {
+    // Use the full grid extent (gray cells define the artboard boundaries)
+    originX = allMinX
+    originY = allMinY
+    canvasW = allMaxX - allMinX
+    canvasH = allMaxY - allMinY
+    // Expand to artboardSize if PDF page is larger (extra margin in Illustrator)
+    if (artboardSize) {
+      canvasW = Math.max(canvasW, artboardSize.w)
+      canvasH = Math.max(canvasH, artboardSize.h)
     }
+  } else if (artboardSize) {
+    originX = 0; originY = 0
+    canvasW = artboardSize.w; canvasH = artboardSize.h
+  } else {
+    originX = Math.min(...rects.map(r => r.x))
+    originY = Math.min(...rects.map(r => r.y))
+    canvasW = Math.max(...rects.map(r => r.x + r.w)) - originX
+    canvasH = Math.max(...rects.map(r => r.y + r.h)) - originY
   }
 
-  // Normalize so content starts at (0, 0)
-  const minX = Math.min(...rects.map(r => r.x))
-  const minY = Math.min(...rects.map(r => r.y))
-  const maxX = Math.max(...rects.map(r => r.x + r.w))
-  const maxY = Math.max(...rects.map(r => r.y + r.h))
-
   return {
-    spacedRects: rects.map(r => ({ ...r, x: r.x - minX, y: r.y - minY })),
-    totalWidth: maxX - minX,
-    totalHeight: maxY - minY,
+    spacedRects: rects.map(r => ({ ...r, x: r.x - originX, y: r.y - originY })),
+    totalWidth: canvasW,
+    totalHeight: canvasH,
   }
 }
 
