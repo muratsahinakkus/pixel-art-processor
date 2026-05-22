@@ -71,8 +71,9 @@ export function validate(rawRects, gridData, expectedPixelSize, expectedGapSize)
   const errors = []
   const { xClusters, yClusters, pixelSize } = gridData
 
-  // Check pixel sizes
+  // Check pixel sizes + individual pixel alignment to grid
   rawRects.forEach((rect, i) => {
+    // Size check
     const wDiff = Math.abs(rect.w - expectedPixelSize)
     const hDiff = Math.abs(rect.h - expectedPixelSize)
     if (wDiff > TOLERANCE || hDiff > TOLERANCE) {
@@ -82,6 +83,36 @@ export function validate(rawRects, gridData, expectedPixelSize, expectedGapSize)
         rectIndex: i,
         rect,
         message: `Piksel boyutu hatalı: beklenen ${expectedPixelSize}pt, bulunan ${round(rect.w)}×${round(rect.h)}pt`,
+      })
+    }
+
+    // Horizontal alignment: is rect.x close to its column's canonical X?
+    const closestX = xClusters.reduce((best, cl) =>
+      Math.abs(rect.x - cl.canonical) < Math.abs(rect.x - best.canonical) ? cl : best
+    )
+    const xDiff = Math.abs(rect.x - closestX.canonical)
+    if (xDiff > TOLERANCE) {
+      errors.push({
+        id: `pos-x-${i}`,
+        type: 'WRONG_PIXEL_POS',
+        rectIndex: i,
+        rect,
+        message: `Piksel yatay hizası hatalı: sütun pozisyonundan ${round(xDiff)}pt sapma`,
+      })
+    }
+
+    // Vertical alignment: is rect.y close to its row's canonical Y?
+    const closestY = yClusters.reduce((best, cl) =>
+      Math.abs(rect.y - cl.canonical) < Math.abs(rect.y - best.canonical) ? cl : best
+    )
+    const yDiff = Math.abs(rect.y - closestY.canonical)
+    if (yDiff > TOLERANCE) {
+      errors.push({
+        id: `pos-y-${i}`,
+        type: 'WRONG_PIXEL_POS',
+        rectIndex: i,
+        rect,
+        message: `Piksel dikey hizası hatalı: satır pozisyonundan ${round(yDiff)}pt sapma`,
       })
     }
   })

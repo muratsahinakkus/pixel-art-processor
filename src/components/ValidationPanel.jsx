@@ -4,7 +4,7 @@ import { validate, fixAndDownload } from '../lib/validate.js'
 function scrollToError(err, rawRects, gridData) {
   let targetEl
 
-  if (err.type === 'WRONG_PIXEL_SIZE') {
+  if (err.type === 'WRONG_PIXEL_SIZE' || err.type === 'WRONG_PIXEL_POS') {
     targetEl = document.getElementById(`pxrect-${err.rectIndex}`)
   } else if (err.type === 'WRONG_GAP_H') {
     // Scroll to the first rect found in the affected column
