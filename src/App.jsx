@@ -117,16 +117,28 @@ export default function App() {
   const handleArtboardSelect = useCallback(async (pageNum) => {
     setIsProcessing(true)
     setParseError(null)
+    setPrevSnapshot(null)
     try {
       const { rects, pageWidth, pageHeight } = await parseAIPage(pdfRef.current, pageNum)
       processRects(rects, 'ai', { w: pageWidth, h: pageHeight })
-      setArtboards(null)
+      // artboards is kept in state so user can go back
     } catch (err) {
       setParseError(err.message)
     } finally {
       setIsProcessing(false)
     }
   }, [])
+
+  const handleBackToArtboards = () => {
+    setRawRects(null)
+    setGridData(null)
+    setMergedData(null)
+    setSpacedData(null)
+    setArtboardSize(null)
+    setPrevSnapshot(null)
+    setHighlightedIds([])
+    // artboards and pdfRef are preserved
+  }
 
   const hasResult = mergedData && rawRects && gridData
 
@@ -136,6 +148,11 @@ export default function App() {
         <div className="app-header-inner">
           <span className="app-logo">⬛</span>
           <h1>Pixel Art Processor</h1>
+          {hasResult && artboards && (
+            <button className="btn-ghost" onClick={handleBackToArtboards}>
+              ← Artboard Seç
+            </button>
+          )}
           {fileName && !isProcessing && (
             <button className="btn-ghost" onClick={resetAll}>
               Yeni dosya
@@ -167,7 +184,7 @@ export default function App() {
           </div>
         )}
 
-        {artboards && !isProcessing && (
+        {artboards && !hasResult && !isProcessing && (
           <ArtboardSelector
             artboards={artboards}
             fileName={fileName}
