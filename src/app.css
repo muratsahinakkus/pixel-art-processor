@@ -538,6 +538,127 @@ body {
   display: inline-block;
 }
 
+/* ---- Color Merge Panel ---- */
+.color-merge-threshold {
+  margin-bottom: 16px;
+}
+
+.color-threshold-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 180px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+.color-threshold-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.color-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.color-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.color-swatch-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.12s, opacity 0.12s;
+  position: relative;
+}
+
+.color-swatch-item:hover {
+  border-color: var(--border-focus);
+}
+
+.color-swatch-item--target {
+  border-color: var(--ok);
+  background: #f0faf4;
+}
+
+.color-swatch-item--excluded {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+.color-swatch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.color-swatch-hex {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Mono', monospace;
+  color: var(--text);
+}
+
+.color-swatch-count {
+  font-size: 10px;
+  color: var(--text-sub);
+}
+
+.color-swatch-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ok);
+  margin-left: 2px;
+}
+
+.color-swatch-exclude {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-sub);
+  padding: 0 2px;
+  line-height: 1;
+  border-radius: 3px;
+  transition: background 0.1s, color 0.1s;
+}
+
+.color-swatch-exclude:hover {
+  background: var(--bg);
+  color: var(--error);
+}
+
 /* ---- Artboard Selector ---- */
 .artboard-selector {
   display: flex;

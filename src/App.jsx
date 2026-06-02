@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react'
 import DropZone from './components/DropZone.jsx'
 import ArtboardSelector from './components/ArtboardSelector.jsx'
 import PreviewPanel from './components/PreviewPanel.jsx'
+import ColorMergePanel from './components/ColorMergePanel.jsx'
 import ValidationPanel from './components/ValidationPanel.jsx'
 import ExportBar from './components/ExportBar.jsx'
 import { loadAIPDF, getArtboards, parseAIPage } from './lib/parseAI.js'
@@ -88,6 +89,17 @@ export default function App() {
     }
   }, [])
 
+  const handleColorMerge = useCallback((newRects) => {
+    const grid = detectGrid(newRects)
+    const merged = mergeGrid(grid)
+    const spaced = getSpacedRects(grid, artboardSize)
+    setRawRects(newRects)
+    setGridData(grid)
+    setMergedData(merged)
+    setSpacedData(spaced)
+    setHighlightedIds([])
+  }, [artboardSize])
+
   const handleArtboardSelect = useCallback(async (pageNum) => {
     setIsProcessing(true)
     setParseError(null)
@@ -157,6 +169,10 @@ export default function App() {
               gridData={gridData}
               mergedData={mergedData}
               highlightedIds={highlightedIds}
+            />
+            <ColorMergePanel
+              rawRects={rawRects}
+              onApply={handleColorMerge}
             />
             <ValidationPanel
               rawRects={rawRects}
