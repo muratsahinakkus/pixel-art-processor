@@ -51,15 +51,16 @@ export default function OriginalView({ rawRects, gridData, zoom, highlightedIds 
       {/* Highlight column gaps with wrong spacing */}
       {highlightedIds.filter(id => id.startsWith('gap-x-')).map(id => {
         const colIdx = parseInt(id.split('-')[2])
-        if (colIdx >= xClusters.length - 1) return null
-        const x1 = xClusters[colIdx].canonical + pixelSize - minX
-        const x2 = xClusters[colIdx + 1].canonical - minX
+        if (colIdx <= 0 || colIdx >= xClusters.length) return null
+        const x1 = xClusters[colIdx - 1].canonical + pixelSize
+        const x2 = xClusters[colIdx].canonical
+        if (x2 <= x1) return null
         return (
           <rect
             key={id}
-            x={x1 + minX}
+            x={x1}
             y={minY}
-            width={Math.max(0, x2 - x1)}
+            width={x2 - x1}
             height={H}
             fill="rgba(255,50,50,0.25)"
           />
@@ -68,16 +69,17 @@ export default function OriginalView({ rawRects, gridData, zoom, highlightedIds 
 
       {highlightedIds.filter(id => id.startsWith('gap-y-')).map(id => {
         const rowIdx = parseInt(id.split('-')[2])
-        if (rowIdx >= yClusters.length - 1) return null
-        const y1 = yClusters[rowIdx].canonical + pixelSize - minY
-        const y2 = yClusters[rowIdx + 1].canonical - minY
+        if (rowIdx <= 0 || rowIdx >= yClusters.length) return null
+        const y1 = yClusters[rowIdx - 1].canonical + pixelSize
+        const y2 = yClusters[rowIdx].canonical
+        if (y2 <= y1) return null
         return (
           <rect
             key={id}
             x={minX}
-            y={y1 + minY}
+            y={y1}
             width={W}
-            height={Math.max(0, y2 - y1)}
+            height={y2 - y1}
             fill="rgba(255,50,50,0.25)"
           />
         )
