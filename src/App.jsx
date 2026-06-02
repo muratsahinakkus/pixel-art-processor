@@ -18,6 +18,7 @@ export default function App() {
   const [mergedData, setMergedData] = useState(null)
   const [spacedData, setSpacedData] = useState(null)
   const [artboardSize, setArtboardSize] = useState(null)
+  const [prevSnapshot, setPrevSnapshot] = useState(null) // one-step undo for color merge
   const [isProcessing, setIsProcessing] = useState(false)
   const [parseError, setParseError] = useState(null)
   const [highlightedIds, setHighlightedIds] = useState([])
@@ -32,6 +33,7 @@ export default function App() {
     setMergedData(null)
     setSpacedData(null)
     setArtboardSize(null)
+    setPrevSnapshot(null)
     setParseError(null)
     setHighlightedIds([])
     pdfRef.current = null
@@ -90,6 +92,8 @@ export default function App() {
   }, [])
 
   const handleColorMerge = useCallback((newRects) => {
+    // Save current state for undo before applying
+    setPrevSnapshot({ rawRects, gridData, mergedData, spacedData })
     const grid = detectGrid(newRects)
     const merged = mergeGrid(grid)
     const spaced = getSpacedRects(grid, artboardSize)
@@ -98,7 +102,17 @@ export default function App() {
     setMergedData(merged)
     setSpacedData(spaced)
     setHighlightedIds([])
-  }, [artboardSize])
+  }, [artboardSize, rawRects, gridData, mergedData, spacedData])
+
+  const handleUndoColorMerge = useCallback(() => {
+    if (!prevSnapshot) return
+    setRawRects(prevSnapshot.rawRects)
+    setGridData(prevSnapshot.gridData)
+    setMergedData(prevSnapshot.mergedData)
+    setSpacedData(prevSnapshot.spacedData)
+    setPrevSnapshot(null)
+    setHighlightedIds([])
+  }, [prevSnapshot])
 
   const handleArtboardSelect = useCallback(async (pageNum) => {
     setIsProcessing(true)
@@ -173,6 +187,8 @@ export default function App() {
             <ColorMergePanel
               rawRects={rawRects}
               onApply={handleColorMerge}
+              onUndo={handleUndoColorMerge}
+              canUndo={!!prevSnapshot}
             />
             <ValidationPanel
               rawRects={rawRects}

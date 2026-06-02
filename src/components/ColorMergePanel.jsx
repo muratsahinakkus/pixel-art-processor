@@ -5,7 +5,7 @@ function groupKey(group) {
   return group.colors.map(c => c.hex).sort().join(',')
 }
 
-export default function ColorMergePanel({ rawRects, onApply }) {
+export default function ColorMergePanel({ rawRects, onApply, onUndo, canUndo }) {
   const [open, setOpen] = useState(false)
   const [threshold, setThreshold] = useState(15)
   const [targets, setTargets] = useState({})   // { groupKey: targetHex }
@@ -160,6 +160,11 @@ export default function ColorMergePanel({ rawRects, onApply }) {
                 <button className="btn-ghost" onClick={handleReset}>
                   Sıfırla
                 </button>
+                {canUndo && (
+                  <button className="btn-ghost" onClick={() => { onUndo(); setApplied(false) }}>
+                    ↩ Geri al
+                  </button>
+                )}
               </div>
 
               {applied && (
