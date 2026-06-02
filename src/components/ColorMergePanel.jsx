@@ -160,11 +160,6 @@ export default function ColorMergePanel({ rawRects, onApply, onUndo, canUndo }) 
                 <button className="btn-ghost" onClick={handleReset}>
                   Sıfırla
                 </button>
-                {canUndo && (
-                  <button className="btn-ghost" onClick={() => { onUndo(); setApplied(false) }}>
-                    ↩ Geri al
-                  </button>
-                )}
               </div>
 
               {applied && (
@@ -173,6 +168,14 @@ export default function ColorMergePanel({ rawRects, onApply, onUndo, canUndo }) 
                 </p>
               )}
             </>
+          )}
+
+          {canUndo && (
+            <div style={{ marginTop: 8 }}>
+              <button className="btn-ghost" onClick={() => { onUndo(); setApplied(false) }}>
+                ↩ Geri al
+              </button>
+            </div>
           )}
 
           <p className="validation-hint" style={{ marginTop: 10 }}>
