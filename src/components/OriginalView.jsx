@@ -32,7 +32,7 @@ export default function OriginalView({ rawRects, gridData, zoom, highlightedIds 
       style={{ display: 'block', imageRendering: 'pixelated' }}
     >
       {rawRects.map((rect, i) => {
-        const isHighlighted = highlightSet.has(`size-${i}`)
+        const isHighlighted = highlightSet.has(`size-${i}`) || highlightSet.has(`pos-x-${i}`) || highlightSet.has(`pos-y-${i}`)
         return (
           <rect
             key={i}
