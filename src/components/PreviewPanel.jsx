@@ -56,7 +56,7 @@ export default function PreviewPanel({ rawRects, gridData, mergedData, highlight
             </span>
           </div>
           <div className="preview-canvas-wrap">
-            <MergedView mergedData={mergedData} zoom={zoom} />
+            <MergedView mergedData={mergedData} zoom={zoom} artboardSize={artboardSize} />
           </div>
         </div>
       </div>

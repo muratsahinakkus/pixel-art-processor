@@ -7,15 +7,18 @@ function colorToHex({ r, g, b }) {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
-export default function MergedView({ mergedData, zoom }) {
-  const { mergedRects, totalWidth, totalHeight } = mergedData
+export default function MergedView({ mergedData, zoom, artboardSize }) {
+  const { mergedRects, totalWidth, totalHeight, scale = 1 } = mergedData
+
+  const canvasW = artboardSize ? artboardSize.w * scale : totalWidth
+  const canvasH = artboardSize ? artboardSize.h * scale : totalHeight
 
   return (
     <div className="merged-view-wrap" style={{ position: 'relative', display: 'inline-block' }}>
       <svg
-        width={totalWidth * zoom}
-        height={totalHeight * zoom}
-        viewBox={`0 0 ${totalWidth} ${totalHeight}`}
+        width={canvasW * zoom}
+        height={canvasH * zoom}
+        viewBox={`0 0 ${canvasW} ${canvasH}`}
         style={{ display: 'block', position: 'relative', imageRendering: 'pixelated' }}
       >
         {mergedRects.map((rect, i) => (

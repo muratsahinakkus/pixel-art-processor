@@ -125,25 +125,29 @@ export function getSpacedRects(gridData, artboardSize = null) {
 }
 
 export function mergeGrid(gridData) {
-  const { grid, pixelSize, colCount, rowCount, xClusters, yClusters } = gridData
+  const { grid, pixelSize, gapSize, colCount, rowCount, xClusters, yClusters } = gridData
   const matrix = buildMatrix(grid, rowCount, colCount)
   const { top, bottom, left, right } = stripGrayBorders(matrix)
 
-  // Keep content at its original position within the artboard.
-  // The top-left of the colored area in the original coordinate system:
-  const offsetX = xClusters?.[left]?.canonical ?? 0
-  const offsetY = yClusters?.[top]?.canonical ?? 0
+  // Scale factor: removing gaps shrinks everything proportionally.
+  // scale = pixelSize / (pixelSize + gapSize)
+  // All original coordinates are multiplied by this factor so the
+  // artboard can be scaled the same way and content fills it correctly.
+  const step = pixelSize + (gapSize ?? 0)
+  const scale = step > pixelSize ? pixelSize / step : 1
 
   const mergedRects = []
   for (let r = top; r <= bottom; r++) {
     for (let c = left; c <= right; c++) {
       const cell = matrix[r][c]
-      if (!cell) continue
-      if (isGray(cell.color)) continue
+      if (!cell || isGray(cell.color)) continue
+
+      const origX = xClusters?.[c]?.canonical ?? (c - left) * step
+      const origY = yClusters?.[r]?.canonical ?? (r - top) * step
 
       mergedRects.push({
-        x: offsetX + (c - left) * pixelSize,
-        y: offsetY + (r - top) * pixelSize,
+        x: origX * scale,
+        y: origY * scale,
         w: pixelSize,
         h: pixelSize,
         color: cell.color,
@@ -154,12 +158,19 @@ export function mergeGrid(gridData) {
   const newColCount = right - left + 1
   const newRowCount = bottom - top + 1
 
+  // Content bounds after scaling
+  const rightCanonical = xClusters?.[right]?.canonical ?? (right - left) * step
+  const bottomCanonical = yClusters?.[bottom]?.canonical ?? (bottom - top) * step
+  const totalWidth = (rightCanonical + pixelSize) * scale
+  const totalHeight = (bottomCanonical + pixelSize) * scale
+
   return {
     mergedRects,
-    totalWidth: offsetX + newColCount * pixelSize,
-    totalHeight: offsetY + newRowCount * pixelSize,
+    totalWidth,
+    totalHeight,
     colCount: newColCount,
     rowCount: newRowCount,
     pixelSize,
+    scale,
   }
 }
