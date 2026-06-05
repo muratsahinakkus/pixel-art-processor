@@ -200,6 +200,7 @@ export default function App() {
               gridData={gridData}
               mergedData={mergedData}
               highlightedIds={highlightedIds}
+              artboardSize={artboardSize}
             />
             <ColorMergePanel
               rawRects={rawRects}

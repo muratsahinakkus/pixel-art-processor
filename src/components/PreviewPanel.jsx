@@ -9,7 +9,7 @@ function zoomLabel(z) {
   return `${z}×`
 }
 
-export default function PreviewPanel({ rawRects, gridData, mergedData, highlightedIds }) {
+export default function PreviewPanel({ rawRects, gridData, mergedData, highlightedIds, artboardSize }) {
   const [zoom, setZoom] = useState(0.25)
 
   return (
@@ -41,6 +41,7 @@ export default function PreviewPanel({ rawRects, gridData, mergedData, highlight
               gridData={gridData}
               zoom={zoom}
               highlightedIds={highlightedIds}
+              artboardSize={artboardSize}
             />
           </div>
         </div>

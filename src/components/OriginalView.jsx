@@ -7,17 +7,22 @@ function colorToHex({ r, g, b }) {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
-export default function OriginalView({ rawRects, gridData, zoom, highlightedIds }) {
+export default function OriginalView({ rawRects, gridData, zoom, highlightedIds, artboardSize }) {
   const { xClusters, yClusters, pixelSize } = gridData
   const highlightSet = new Set(highlightedIds)
 
-  // Bounding box of all pixel rects
+  // Bounding box: expand to include artboard boundaries if available
   const xs = rawRects.map(r => r.x)
   const ys = rawRects.map(r => r.y)
-  const minX = Math.min(...xs)
-  const minY = Math.min(...ys)
-  const maxX = Math.max(...rawRects.map(r => r.x + r.w))
-  const maxY = Math.max(...rawRects.map(r => r.y + r.h))
+  const contentMinX = Math.min(...xs)
+  const contentMinY = Math.min(...ys)
+  const contentMaxX = Math.max(...rawRects.map(r => r.x + r.w))
+  const contentMaxY = Math.max(...rawRects.map(r => r.y + r.h))
+
+  const minX = artboardSize ? Math.min(0, contentMinX) : contentMinX
+  const minY = artboardSize ? Math.min(0, contentMinY) : contentMinY
+  const maxX = artboardSize ? Math.max(artboardSize.w, contentMaxX) : contentMaxX
+  const maxY = artboardSize ? Math.max(artboardSize.h, contentMaxY) : contentMaxY
   const W = maxX - minX
   const H = maxY - minY
 
@@ -66,6 +71,21 @@ export default function OriginalView({ rawRects, gridData, zoom, highlightedIds 
           />
         )
       })}
+
+      {/* Artboard boundary frame — preview only, not exported */}
+      {artboardSize && (
+        <rect
+          x={0}
+          y={0}
+          width={artboardSize.w}
+          height={artboardSize.h}
+          fill="none"
+          stroke="#000000"
+          strokeWidth={1.5}
+          vectorEffect="non-scaling-stroke"
+          pointerEvents="none"
+        />
+      )}
 
       {highlightedIds.filter(id => id.startsWith('gap-y-')).map(id => {
         const rowIdx = parseInt(id.split('-')[2])
