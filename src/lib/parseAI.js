@@ -41,21 +41,46 @@ export async function loadAIPDF(arrayBuffer) {
 
 async function getArtboardNamesFromXMP(pdf) {
   try {
+    // ── Approach 1: PDF page labels ──────────────────────────────────────────
+    const labels = await pdf.getPageLabels()
+    if (labels && labels.length > 0 && labels.some(l => l && l.trim())) {
+      console.log('[parseAI] page labels:', labels)
+      return labels.map((l, i) => (l && l.trim()) || null)
+    }
+
+    // ── Approach 2: XMP metadata ─────────────────────────────────────────────
     const { metadata } = await pdf.getMetadata()
     if (!metadata) return null
 
-    // pdfjs-dist Metadata object exposes getRaw() which returns the raw XMP XML string
     const raw = typeof metadata.getRaw === 'function' ? metadata.getRaw() : null
-    if (!raw) return null
+    if (!raw) {
+      console.log('[parseAI] metadata exists but getRaw() returned nothing, keys:', Object.keys(metadata))
+      return null
+    }
 
-    // Illustrator stores artboard names inside <xmpTPg:ArtBoards><rdf:Seq><rdf:li>...</rdf:li>
+    console.log('[parseAI] raw XMP (first 2000 chars):', raw.slice(0, 2000))
+
+    // Pattern A: <xmpTPg:ArtBoardName>name</xmpTPg:ArtBoardName>  (Illustrator CC)
+    const nameTagMatches = [...raw.matchAll(/<xmpTPg:ArtBoardName[^>]*>([\s\S]*?)<\/xmpTPg:ArtBoardName>/g)]
+    if (nameTagMatches.length > 0) {
+      const names = nameTagMatches.map(m => m[1].trim()).filter(Boolean)
+      console.log('[parseAI] artboard names (ArtBoardName tag):', names)
+      return names.length > 0 ? names : null
+    }
+
+    // Pattern B: <xmpTPg:ArtBoards> block with plain <rdf:li> text content
     const blockMatch = raw.match(/<xmpTPg:ArtBoards>([\s\S]*?)<\/xmpTPg:ArtBoards>/)
-    if (!blockMatch) return null
+    if (blockMatch) {
+      const lis = [...blockMatch[1].matchAll(/<rdf:li[^>]*>([^<]*)<\/rdf:li>/g)]
+      const names = lis.map(li => li[1].trim()).filter(Boolean)
+      console.log('[parseAI] artboard names (rdf:li text):', names)
+      return names.length > 0 ? names : null
+    }
 
-    const lis = [...blockMatch[1].matchAll(/<rdf:li[^>]*>([\s\S]*?)<\/rdf:li>/g)]
-    const names = lis.map(li => li[1].trim()).filter(Boolean)
-    return names.length > 0 ? names : null
-  } catch {
+    console.log('[parseAI] no artboard names found in XMP')
+    return null
+  } catch (e) {
+    console.log('[parseAI] getArtboardNamesFromXMP error:', e)
     return null
   }
 }
