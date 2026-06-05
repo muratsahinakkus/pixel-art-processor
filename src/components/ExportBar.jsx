@@ -15,12 +15,14 @@ const DownloadIcon = () => (
   </svg>
 )
 
-export default function ExportBar({ mergedData, spacedData, fileName }) {
+export default function ExportBar({ mergedData, spacedData, fileName, artboardSize }) {
   const { mergedRects, totalWidth, totalHeight, colCount, rowCount, pixelSize } = mergedData
   const colorCount = countColors(mergedRects)
 
   function handleDownloadMerged() {
-    const svg = buildSVGString(mergedRects, totalWidth, totalHeight)
+    const canvasW = artboardSize ? Math.max(artboardSize.w, totalWidth) : totalWidth
+    const canvasH = artboardSize ? Math.max(artboardSize.h, totalHeight) : totalHeight
+    const svg = buildSVGString(mergedRects, canvasW, canvasH)
     downloadSVG(svg, fileName, '_merged')
     window.gtag?.('event', 'download', { type: 'merged', pixel_count: mergedRects.length })
   }

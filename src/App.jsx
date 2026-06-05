@@ -219,7 +219,7 @@ export default function App() {
       </main>
 
       {hasResult && (
-        <ExportBar mergedData={mergedData} spacedData={spacedData} fileName={fileName} />
+        <ExportBar mergedData={mergedData} spacedData={spacedData} fileName={fileName} artboardSize={artboardSize} />
       )}
     </div>
   )
