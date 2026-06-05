@@ -120,6 +120,9 @@ export default function App() {
     setPrevSnapshot(null)
     try {
       const { rects, pageWidth, pageHeight } = await parseAIPage(pdfRef.current, pageNum)
+      // Use artboard name as export filename if available, otherwise keep AI filename
+      const ab = artboards?.find(a => a.pageNum === pageNum)
+      if (ab?.name) setFileName(ab.name)
       processRects(rects, 'ai', { w: pageWidth, h: pageHeight })
       // artboards is kept in state so user can go back
     } catch (err) {
@@ -127,7 +130,7 @@ export default function App() {
     } finally {
       setIsProcessing(false)
     }
-  }, [])
+  }, [artboards])
 
   const handleBackToArtboards = () => {
     setRawRects(null)

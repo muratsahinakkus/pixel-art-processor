@@ -37,9 +37,34 @@ export async function loadAIPDF(arrayBuffer) {
   }
 }
 
+// ─── Artboard names from XMP metadata ───────────────────────────────────────
+
+async function getArtboardNamesFromXMP(pdf) {
+  try {
+    const { metadata } = await pdf.getMetadata()
+    if (!metadata) return null
+
+    // pdfjs-dist Metadata object exposes getRaw() which returns the raw XMP XML string
+    const raw = typeof metadata.getRaw === 'function' ? metadata.getRaw() : null
+    if (!raw) return null
+
+    // Illustrator stores artboard names inside <xmpTPg:ArtBoards><rdf:Seq><rdf:li>...</rdf:li>
+    const blockMatch = raw.match(/<xmpTPg:ArtBoards>([\s\S]*?)<\/xmpTPg:ArtBoards>/)
+    if (!blockMatch) return null
+
+    const lis = [...blockMatch[1].matchAll(/<rdf:li[^>]*>([\s\S]*?)<\/rdf:li>/g)]
+    const names = lis.map(li => li[1].trim()).filter(Boolean)
+    return names.length > 0 ? names : null
+  } catch {
+    return null
+  }
+}
+
 // ─── Artboard list ───────────────────────────────────────────────────────────
 
 export async function getArtboards(pdf) {
+  const xmpNames = await getArtboardNamesFromXMP(pdf)
+
   const artboards = []
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i)
@@ -47,6 +72,7 @@ export async function getArtboards(pdf) {
     const thumbnail = await renderThumbnail(page, 120)
     artboards.push({
       pageNum: i,
+      name: xmpNames?.[i - 1] || null,   // null → ArtboardSelector falls back to "Artboard N"
       width: Math.round(vp.width),
       height: Math.round(vp.height),
       thumbnail,

@@ -1,4 +1,7 @@
 export default function ArtboardSelector({ artboards, fileName, onSelect, onBack }) {
+  function displayName(ab) {
+    return ab.name || `Artboard ${ab.pageNum}`
+  }
   return (
     <div className="artboard-selector">
       <div className="artboard-selector-header">
@@ -19,12 +22,12 @@ export default function ArtboardSelector({ artboards, fileName, onSelect, onBack
             <div className="artboard-thumb-wrap">
               <img
                 src={ab.thumbnail}
-                alt={`Artboard ${ab.pageNum}`}
+                alt={displayName(ab)}
                 className="artboard-thumb"
               />
             </div>
             <div className="artboard-card-label">
-              <span className="artboard-card-name">Artboard {ab.pageNum}</span>
+              <span className="artboard-card-name">{displayName(ab)}</span>
               <span className="artboard-card-size">{ab.width} × {ab.height} pt</span>
             </div>
           </button>
