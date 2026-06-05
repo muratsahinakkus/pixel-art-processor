@@ -129,11 +129,8 @@ export function mergeGrid(gridData) {
   const matrix = buildMatrix(grid, rowCount, colCount)
   const { top, bottom, left, right } = stripGrayBorders(matrix)
 
-  // Keep content at its original position within the artboard.
-  // The top-left of the colored area in the original coordinate system:
-  const offsetX = xClusters?.[left]?.canonical ?? 0
-  const offsetY = yClusters?.[top]?.canonical ?? 0
-
+  // Merged export is a compact, gap-free version — content starts at (0,0).
+  // Artboard size equals the content bounds exactly.
   const mergedRects = []
   for (let r = top; r <= bottom; r++) {
     for (let c = left; c <= right; c++) {
@@ -142,8 +139,8 @@ export function mergeGrid(gridData) {
       if (isGray(cell.color)) continue
 
       mergedRects.push({
-        x: offsetX + (c - left) * pixelSize,
-        y: offsetY + (r - top) * pixelSize,
+        x: (c - left) * pixelSize,
+        y: (r - top) * pixelSize,
         w: pixelSize,
         h: pixelSize,
         color: cell.color,
@@ -156,8 +153,8 @@ export function mergeGrid(gridData) {
 
   return {
     mergedRects,
-    totalWidth: offsetX + newColCount * pixelSize,
-    totalHeight: offsetY + newRowCount * pixelSize,
+    totalWidth: newColCount * pixelSize,
+    totalHeight: newRowCount * pixelSize,
     colCount: newColCount,
     rowCount: newRowCount,
     pixelSize,

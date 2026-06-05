@@ -20,9 +20,8 @@ export default function ExportBar({ mergedData, spacedData, fileName, artboardSi
   const colorCount = countColors(mergedRects)
 
   function handleDownloadMerged() {
-    const canvasW = artboardSize ? Math.max(artboardSize.w, totalWidth) : totalWidth
-    const canvasH = artboardSize ? Math.max(artboardSize.h, totalHeight) : totalHeight
-    const svg = buildSVGString(mergedRects, canvasW, canvasH)
+    // Merged export is compact — artboard = content size, no original-artboard padding.
+    const svg = buildSVGString(mergedRects, totalWidth, totalHeight)
     downloadSVG(svg, fileName, '_merged')
     window.gtag?.('event', 'download', { type: 'merged', pixel_count: mergedRects.length })
   }
