@@ -90,34 +90,34 @@ export function getSpacedRects(gridData, artboardSize = null) {
   if (rects.length === 0) return { spacedRects: [], totalWidth: 0, totalHeight: 0 }
 
   // ── Step 3: determine canvas & origin ───────────────────────────────────
-  // Priority: all-cell bounds > artboardSize (PDF page) > content-only bounds
-  let canvasW, canvasH, originX, originY
 
-  if (hasAnyCell) {
-    // Use the full grid extent (gray cells define the artboard boundaries)
-    originX = allMinX
-    originY = allMinY
-    canvasW = allMaxX - allMinX
-    canvasH = allMaxY - allMinY
-    // Expand to artboardSize if PDF page is larger (extra margin in Illustrator)
-    if (artboardSize) {
-      canvasW = Math.max(canvasW, artboardSize.w)
-      canvasH = Math.max(canvasH, artboardSize.h)
+  if (artboardSize) {
+    // Rect positions are already in artboard coordinate space (Y-flipped from PDF).
+    // Do NOT normalize — keep positions exactly as in the original Illustrator file.
+    return {
+      spacedRects: rects,
+      totalWidth: artboardSize.w,
+      totalHeight: artboardSize.h,
     }
-  } else if (artboardSize) {
-    originX = 0; originY = 0
-    canvasW = artboardSize.w; canvasH = artboardSize.h
-  } else {
-    originX = Math.min(...rects.map(r => r.x))
-    originY = Math.min(...rects.map(r => r.y))
-    canvasW = Math.max(...rects.map(r => r.x + r.w)) - originX
-    canvasH = Math.max(...rects.map(r => r.y + r.h)) - originY
   }
 
+  if (hasAnyCell) {
+    // No artboard size (SVG files): normalize to full grid bounds including gray cells.
+    // Gray cells define the true grid origin and extent.
+    return {
+      spacedRects: rects.map(r => ({ ...r, x: r.x - allMinX, y: r.y - allMinY })),
+      totalWidth: allMaxX - allMinX,
+      totalHeight: allMaxY - allMinY,
+    }
+  }
+
+  // Fallback: normalize to content bounds only
+  const minX = Math.min(...rects.map(r => r.x))
+  const minY = Math.min(...rects.map(r => r.y))
   return {
-    spacedRects: rects.map(r => ({ ...r, x: r.x - originX, y: r.y - originY })),
-    totalWidth: canvasW,
-    totalHeight: canvasH,
+    spacedRects: rects.map(r => ({ ...r, x: r.x - minX, y: r.y - minY })),
+    totalWidth: Math.max(...rects.map(r => r.x + r.w)) - minX,
+    totalHeight: Math.max(...rects.map(r => r.y + r.h)) - minY,
   }
 }
 
