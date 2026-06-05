@@ -93,11 +93,14 @@ export function getSpacedRects(gridData, artboardSize = null) {
 
   if (artboardSize) {
     // Rect positions are already in artboard coordinate space (Y-flipped from PDF).
-    // Do NOT normalize — keep positions exactly as in the original Illustrator file.
+    // Do NOT normalize. Canvas = max(PDF page, all-cells extent) to handle cases
+    // where the PDF CropBox is smaller than the actual Illustrator artboard.
+    const canvasW = hasAnyCell ? Math.max(artboardSize.w, allMaxX) : artboardSize.w
+    const canvasH = hasAnyCell ? Math.max(artboardSize.h, allMaxY) : artboardSize.h
     return {
       spacedRects: rects,
-      totalWidth: artboardSize.w,
-      totalHeight: artboardSize.h,
+      totalWidth: canvasW,
+      totalHeight: canvasH,
     }
   }
 
