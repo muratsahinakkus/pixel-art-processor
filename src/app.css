@@ -737,6 +737,45 @@ body {
   color: var(--text);
 }
 
+.artboard-card-name--editable {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: text;
+  border-radius: 3px;
+  padding: 1px 3px;
+  margin: -1px -3px;
+  transition: background 0.15s;
+}
+
+.artboard-card-name--editable:hover {
+  background: var(--surface-hover, rgba(0,0,0,0.06));
+}
+
+.artboard-edit-icon {
+  font-size: 11px;
+  opacity: 0;
+  color: var(--text-sub);
+  transition: opacity 0.15s;
+}
+
+.artboard-card-name--editable:hover .artboard-edit-icon {
+  opacity: 1;
+}
+
+.artboard-name-input {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1.5px solid var(--accent, #5b7fff);
+  border-radius: 4px;
+  padding: 1px 5px;
+  width: 100%;
+  outline: none;
+  box-sizing: border-box;
+}
+
 .artboard-card-size {
   font-size: 11px;
   color: var(--text-sub);
