@@ -40,47 +40,57 @@ export async function loadAIPDF(arrayBuffer) {
 // ─── Artboard names from XMP metadata ───────────────────────────────────────
 
 async function getArtboardNamesFromXMP(pdf) {
+  console.log('[parseAI] getArtboardNamesFromXMP called, pages:', pdf.numPages)
   try {
     // ── Approach 1: PDF page labels ──────────────────────────────────────────
     const labels = await pdf.getPageLabels()
+    console.log('[parseAI] getPageLabels():', labels)
+
     if (labels && labels.length > 0 && labels.some(l => l && l.trim())) {
-      console.log('[parseAI] page labels:', labels)
-      return labels.map((l, i) => (l && l.trim()) || null)
+      return labels.map(l => (l && l.trim()) || null)
     }
 
     // ── Approach 2: XMP metadata ─────────────────────────────────────────────
-    const { metadata } = await pdf.getMetadata()
-    if (!metadata) return null
+    const metaResult = await pdf.getMetadata()
+    console.log('[parseAI] getMetadata() info keys:', Object.keys(metaResult.info || {}))
+    console.log('[parseAI] getMetadata() metadata:', metaResult.metadata)
 
-    const raw = typeof metadata.getRaw === 'function' ? metadata.getRaw() : null
-    if (!raw) {
-      console.log('[parseAI] metadata exists but getRaw() returned nothing, keys:', Object.keys(metadata))
+    const { metadata } = metaResult
+    if (!metadata) {
+      console.log('[parseAI] metadata is null/undefined — no XMP in this file')
       return null
     }
 
-    console.log('[parseAI] raw XMP (first 2000 chars):', raw.slice(0, 2000))
+    console.log('[parseAI] metadata type:', typeof metadata, 'keys:', Object.keys(metadata))
+    console.log('[parseAI] metadata.getRaw exists:', typeof metadata.getRaw)
+    console.log('[parseAI] metadata.getAll exists:', typeof metadata.getAll)
 
-    // Pattern A: <xmpTPg:ArtBoardName>name</xmpTPg:ArtBoardName>  (Illustrator CC)
+    const raw = typeof metadata.getRaw === 'function' ? metadata.getRaw() : null
+    console.log('[parseAI] getRaw() result (first 500):', raw ? raw.slice(0, 500) : raw)
+
+    if (!raw) return null
+
+    // Pattern A: <xmpTPg:ArtBoardName> (Illustrator CC structure)
     const nameTagMatches = [...raw.matchAll(/<xmpTPg:ArtBoardName[^>]*>([\s\S]*?)<\/xmpTPg:ArtBoardName>/g)]
     if (nameTagMatches.length > 0) {
       const names = nameTagMatches.map(m => m[1].trim()).filter(Boolean)
-      console.log('[parseAI] artboard names (ArtBoardName tag):', names)
+      console.log('[parseAI] names via ArtBoardName tag:', names)
       return names.length > 0 ? names : null
     }
 
-    // Pattern B: <xmpTPg:ArtBoards> block with plain <rdf:li> text content
+    // Pattern B: plain <rdf:li> text under <xmpTPg:ArtBoards>
     const blockMatch = raw.match(/<xmpTPg:ArtBoards>([\s\S]*?)<\/xmpTPg:ArtBoards>/)
     if (blockMatch) {
       const lis = [...blockMatch[1].matchAll(/<rdf:li[^>]*>([^<]*)<\/rdf:li>/g)]
       const names = lis.map(li => li[1].trim()).filter(Boolean)
-      console.log('[parseAI] artboard names (rdf:li text):', names)
+      console.log('[parseAI] names via rdf:li:', names)
       return names.length > 0 ? names : null
     }
 
-    console.log('[parseAI] no artboard names found in XMP')
+    console.log('[parseAI] XMP found but no artboard name patterns matched')
     return null
   } catch (e) {
-    console.log('[parseAI] getArtboardNamesFromXMP error:', e)
+    console.log('[parseAI] error:', e)
     return null
   }
 }
