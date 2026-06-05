@@ -66,9 +66,16 @@ async function getArtboardNamesFromXMP(pdf) {
     console.log('[parseAI] metadata.getAll exists:', typeof metadata.getAll)
 
     const raw = typeof metadata.getRaw === 'function' ? metadata.getRaw() : null
-    console.log('[parseAI] getRaw() result (first 500):', raw ? raw.slice(0, 500) : raw)
-
     if (!raw) return null
+
+    // Find and log the ArtBoard section specifically
+    const artboardIdx = raw.indexOf('ArtBoard')
+    console.log('[parseAI] "ArtBoard" first index in XMP:', artboardIdx)
+    if (artboardIdx >= 0) {
+      console.log('[parseAI] XMP around ArtBoard (±300):', raw.slice(Math.max(0, artboardIdx - 100), artboardIdx + 600))
+    } else {
+      console.log('[parseAI] full XMP:', raw)
+    }
 
     // Pattern A: <xmpTPg:ArtBoardName> (Illustrator CC structure)
     const nameTagMatches = [...raw.matchAll(/<xmpTPg:ArtBoardName[^>]*>([\s\S]*?)<\/xmpTPg:ArtBoardName>/g)]
