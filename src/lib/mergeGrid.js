@@ -125,9 +125,14 @@ export function getSpacedRects(gridData, artboardSize = null) {
 }
 
 export function mergeGrid(gridData) {
-  const { grid, pixelSize, colCount, rowCount } = gridData
+  const { grid, pixelSize, colCount, rowCount, xClusters, yClusters } = gridData
   const matrix = buildMatrix(grid, rowCount, colCount)
   const { top, bottom, left, right } = stripGrayBorders(matrix)
+
+  // Keep content at its original position within the artboard.
+  // The top-left of the colored area in the original coordinate system:
+  const offsetX = xClusters?.[left]?.canonical ?? 0
+  const offsetY = yClusters?.[top]?.canonical ?? 0
 
   const mergedRects = []
   for (let r = top; r <= bottom; r++) {
@@ -137,8 +142,8 @@ export function mergeGrid(gridData) {
       if (isGray(cell.color)) continue
 
       mergedRects.push({
-        x: (c - left) * pixelSize,
-        y: (r - top) * pixelSize,
+        x: offsetX + (c - left) * pixelSize,
+        y: offsetY + (r - top) * pixelSize,
         w: pixelSize,
         h: pixelSize,
         color: cell.color,
@@ -151,8 +156,8 @@ export function mergeGrid(gridData) {
 
   return {
     mergedRects,
-    totalWidth: newColCount * pixelSize,
-    totalHeight: newRowCount * pixelSize,
+    totalWidth: offsetX + newColCount * pixelSize,
+    totalHeight: offsetY + newRowCount * pixelSize,
     colCount: newColCount,
     rowCount: newRowCount,
     pixelSize,
